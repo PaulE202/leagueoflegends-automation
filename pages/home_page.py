@@ -64,29 +64,3 @@ class HomePage(BasePage):
         """Get Centered Promotion blade component"""
         blade_element = self.wait_for_element(self.CENTERED_PROMOTION)
         return CenteredPromotionBlade(self.driver, blade_element)
-    
-    # Blade existence checks
-    
-    def has_game_simple_masthead(self):
-        """Check if Game Simple Masthead blade exists"""
-        return self.is_displayed(self.GAME_SIMPLE_MASTHEAD)
-    
-    def has_article_card_carousel(self):
-        """Check if Article Card Carousel blade exists"""
-        return self.is_displayed(self.ARTICLE_CARD_CAROUSEL)
-    
-    def has_icon_tab_choose_champion(self):
-        """Check if Icon Tab blade exists"""
-        return self.is_displayed(self.ICON_TAB_CHOOSE_CHAMPION)
-    
-    def has_icon_tab_multiple_ways(self):
-        """Check if Icon Tab (Multiple Ways) blade exists"""
-        return self.is_displayed(self.ICON_TAB_MULTIPLE_WAYS)
-    
-    def has_media_promo(self):
-        """Check if Media Promo blade exists"""
-        return self.is_displayed(self.MEDIA_PROMO)
-    
-    def has_centered_promotion(self):
-        """Check if Centered Promotion blade exists"""
-        return self.is_displayed(self.CENTERED_PROMOTION)

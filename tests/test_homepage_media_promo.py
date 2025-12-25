@@ -6,30 +6,30 @@ class TestMediaPromo:
 
     @pytest.fixture(scope="session")
     def media_promo(self, home_page):
-        """Get Media Promo blade and scroll into view"""
+        """Get blade and scroll into view"""
         blade = home_page.get_media_promo()
         blade.scroll_into_view()
         return blade
     
     # Structural tests
 
-    def test_media_promo_is_displayed(self, media_promo):
-        """Verify blade is displayed on page"""
-        assert media_promo.is_visible(), "Media Promo blade should be visible"
+    def test_media_promo_is_visible(self, media_promo):
+        """Verify blade is visible on page"""
+        assert media_promo.is_visible(), "Blade should be visible"
     
     def test_backdrop_exists(self, media_promo):
         """Verify backdrop exists"""
-        assert media_promo.has_backdrop(), "Media Promo blade should have backdrop"
+        assert media_promo.has_backdrop(), "Blade should have backdrop"
     
     def test_backdrop_background_has_image(self, media_promo):
         """Verify backdrop background contains image"""
-        assert media_promo.backdrop_background_has_image(), "Media Promo backdrop background should contain image"
+        assert media_promo.backdrop_background_has_image(), "Backdrop background should contain image"
 
     # Heading tests
 
     def test_heading_exists(self, media_promo):
         """Verify heading section exists"""
-        assert media_promo.has_heading(), "Media Promo blade should have heading section"
+        assert media_promo.has_heading(), "Blade should have heading section"
     
     def test_supertitle_text(self, media_promo):
         """Verify supertitle has expected content"""
@@ -46,20 +46,22 @@ class TestMediaPromo:
         assert title_text == expected_title, f"Title should be '{expected_title}', got '{title_text}'"
 
     def test_description_has_text(self, media_promo):
-        """Verify description is displayed"""
+        """Verify description is correct"""
         description_text = media_promo.get_description_text()
-        assert description_text is not None, "Description should exist"
-        assert len(description_text) > 0, "Description should have text"
+
+        assert description_text is not None, \
+            "Blade description should exist"
+        assert description_text.strip(), \
+            "Blade description should have non-whitespace text"
     
     # CTA tests
-
     def test_links_section_exists(self, media_promo):
-        """Verify Media Promo has links section"""
-        assert media_promo.has_links_section(), "Media Promo should have links section"
+        """Verify blade has links section"""
+        assert media_promo.has_links_section(), "Blade should have links section"
     
-    def test_primary_cta_exists(self, media_promo):
-        """Verify primary CTA is displayed"""
-        assert media_promo.has_primary_cta(), "Media Promo should have primary CTA"
+    def test_primary_cta_is_visible(self, media_promo):
+        """Verify primary CTA is visible"""
+        assert media_promo.is_primary_cta_visible(), "Blade primary CTA should be visible"
     
     def test_primary_cta_text(self, media_promo):
         """Verify primary CTA has correct text"""
@@ -88,12 +90,12 @@ class TestMediaPromo:
 
     def test_featured_media_exists(self, media_promo):
         """Verify featured media section exists"""
-        assert media_promo.has_featured_media(), "Media Promo should have a featured media section"
+        assert media_promo.has_featured_media(), "Blade should have a featured media section"
     
     def test_featured_media_is_image(self, media_promo):
         """Verify featured media is an image"""
-        assert media_promo.featured_media_is_image(), "Media Promo should have an image as the featured media"
+        assert media_promo.featured_media_is_image(), "Blade should have an image as the featured media"
     
-    def test_featured_media_is_displayed(self, media_promo):
-        """Verify featured image is displayed"""
-        assert media_promo.is_featured_media_visible(), "Media Promo featured media should be displayed"
+    def test_featured_media_is_visible(self, media_promo):
+        """Verify featured image is visible"""
+        assert media_promo.is_featured_media_visible(), "Blade featured media should be visible"

@@ -1,17 +1,15 @@
+import base64
 import pytest
+import os
+import time
+import pytest_html
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.edge.service import Service as EdgeService
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
-
-# Viewport configurations for responsive testing
-VIEWPORTS = {
-    'desktop': (1920, 1080),
-    'tablet': (768, 1024),
-    'mobile': (375, 667)
-}
 
 
 def pytest_addoption(parser):
@@ -28,91 +26,6 @@ def pytest_addoption(parser):
         default=False,
         help="Run browser in headless mode"
     )
-
-
-@pytest.fixture(scope="function")
-def browser(request):
-    """
-    Browser fixture - initializes and closes browser for each test
-    Usage: Run with --browser=firefox or --browser=edge
-    """
-    browser_name = request.config.getoption("--browser")
-    headless = request.config.getoption("--headless")
-    driver = None
-    
-    if browser_name.lower() == "firefox":
-        options = webdriver.FirefoxOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=options
-        )
-    elif browser_name.lower() == "edge":
-        options = webdriver.EdgeOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=options
-        )
-    else:
-        raise ValueError(f"Unsupported browser: {browser_name}")
-
-    
-    # Maximize window by default
-    driver.maximize_window()
-    
-    # Implicit wait
-    driver.implicitly_wait(10)
-    
-    yield driver
-
-    # Teardown - close browser after all tests in class complete
-    try:
-        driver.quit()
-    except Exception as e:
-        # Browser may have already closed - that's okay
-        print(f"\nNote: Browser cleanup encountered: {type(e).__name__}")
-        pass
-
-@pytest.fixture(scope="class")
-def class_browser(request):
-    """
-    Class-scoped browser fixture - one browser instance for entire test class
-    More efficient for smoke tests and related test groups
-    Usage: Use in test classes for better performance
-    """
-    browser_name = request.config.getoption("--browser")
-    headless = request.config.getoption("--headless")
-    driver = None
-    
-    if browser_name.lower() == "firefox":
-        options = webdriver.FirefoxOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=options
-        )
-    elif browser_name.lower() == "edge":
-        options = webdriver.EdgeOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=options
-        )
-    else:
-        raise ValueError(f"Unsupported browser: {browser_name}")
-    
-    driver.maximize_window()
-    driver.implicitly_wait(10)
-    
-    yield driver
-    
-    # Teardown - close browser after all tests in class complete
-    driver.quit()
 
 @pytest.fixture(scope="session")
 def session_browser(request):
@@ -158,79 +71,75 @@ def home_page(session_browser):
     home.dismiss_riot_alert()
     return home
 
-@pytest.fixture(params=['firefox', 'edge'])
-def multi_browser(request):
-    """
-    Multi-browser fixture - runs tests on both Firefox and Edge
-    Use this fixture when you want a test to run on both browsers automatically
-    """
-    browser_name = request.param
-    headless = request.config.getoption("--headless")
-    driver = None
-    
-    if browser_name == "firefox":
-        options = webdriver.FirefoxOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=options
-        )
-    elif browser_name == "edge":
-        options = webdriver.EdgeOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=options
-        )
-    
-    driver.maximize_window()
-    driver.implicitly_wait(10)
-    
-    yield driver
-    
-    driver.quit()
-
-
-@pytest.fixture(params=VIEWPORTS.keys())
-def responsive_browser(request, browser):
-    """
-    Responsive fixture - runs test across desktop, tablet, mobile viewports
-    Returns tuple: (driver, viewport_name)
-    """
-    viewport_name = request.param
-    width, height = VIEWPORTS[viewport_name]
-    
-    browser.set_window_size(width, height)
-    
-    yield browser, viewport_name
-
-
-@pytest.fixture
-def desktop_browser(browser):
-    """Desktop viewport (1920x1080)"""
-    browser.set_window_size(1920, 1080)
-    return browser
-
-
-@pytest.fixture
-def tablet_browser(browser):
-    """Tablet viewport (768x1024)"""
-    browser.set_window_size(768, 1024)
-    return browser
-
-
-@pytest.fixture
-def mobile_browser(browser):
-    """Mobile viewport (375x667)"""
-    browser.set_window_size(375, 667)
-    return browser
-
-
 @pytest.fixture(scope="session", autouse=True)
 def create_reports_folders():
     """Create necessary folders for reports and screenshots"""
     import os
     os.makedirs("reports", exist_ok=True)
     os.makedirs("screenshots", exist_ok=True)
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Capture screenshot on test failure and attach to HTML report"""
+    outcome = yield
+    report = outcome.get_result()
+    extras = getattr(report, "extras", [])
+    
+    if report.when == "call" and report.failed:
+        driver = None
+        blade = None
+        
+        # Get driver from fixtures
+        if "session_browser" in item.funcargs:
+            driver = item.funcargs["session_browser"]
+        elif "home_page" in item.funcargs:
+            driver = item.funcargs["home_page"].driver
+        
+        # Get blade fixture
+        blade_fixture_names = [
+            "masthead",
+            "carousel_blade", 
+            "icon_tab_choose_champion",
+            "icon_tab_multiple_ways_to_play",
+            "media_promo",
+            "centered_promotion"
+        ]
+        
+        for fixture_name in blade_fixture_names:
+            if fixture_name in item.funcargs:
+                blade = item.funcargs[fixture_name]
+                break
+        
+        # Scroll to blade before screenshot
+        if blade and hasattr(blade, 'scroll_into_view'):
+            try:
+                blade.scroll_into_view()
+                time.sleep(0.7)
+            except:
+                pass
+        
+        # Take screenshot
+        if driver:
+            test_name = item.nodeid.replace("::", "_").replace("/", "_").replace("\\", "_")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            screenshot_path = os.path.join("screenshots", f"{test_name}_{timestamp}.png")
+            
+            try:
+                driver.save_screenshot(screenshot_path)
+                print(f"\n📸 Screenshot saved: {screenshot_path}")
+                
+                # Read image and encode to base64 STRING
+                with open(screenshot_path, 'rb') as f:
+                    image_bytes = f.read()
+                
+                import base64
+                image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+                
+                # Pass base64 string to pytest-html
+                extras.append(pytest_html.extras.png(image_base64))
+                print(f"✓ Attached to HTML report")
+                    
+            except Exception as e:
+                print(f"\n❌ Screenshot error: {e}")
+    
+    report.extras = extras

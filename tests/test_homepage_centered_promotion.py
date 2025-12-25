@@ -6,37 +6,70 @@ class TestCenteredPromotion:
 
     @pytest.fixture(scope="session")
     def centered_promotion(self, home_page):
-        """Get Centered Promotion once for all tests"""
+        """Get blade once for all tests"""
         return home_page.get_centered_promotion()
+    
+    @pytest.fixture(scope="class")
+    def video_element(self, centered_promotion):
+        """Get video element from backdrop background"""
+        background = centered_promotion.get_backdrop_background()
+        try:
+            return background.find_element("tag name", "video")
+        except:
+            pytest.fail("Video element not found in backdrop background")
     
     # Structural tests
     
-    def test_centered_promotion_is_displayed(self, centered_promotion):
-        """Verify blade is displayed on page"""
-        assert centered_promotion.is_visible(), "Centered Promotion should be visible"
+    def test_centered_promotion_is_visible(self, centered_promotion):
+        """Verify blade is visible on page"""
+        assert centered_promotion.is_visible(), "Blade should be visible"
     
     def test_backdrop_exists(self, centered_promotion):
         """Verify blade has backdrop"""
-        assert centered_promotion.has_backdrop(), "Centered Promotion should have backdrop"
+        assert centered_promotion.has_backdrop(), "Blade should have backdrop"
     
     def test_backdrop_has_background(self, centered_promotion):
         """Verify backdrop has background layer"""
         assert centered_promotion.has_backdrop_background(), \
-            "Centered Promotion backdrop should have background layer"
+            "Blade backdrop should have background layer"
+        
+    # Video tests
+
+    def test_video_has_src(self, video_element):
+        """Verify video has valid source"""
+        sources = video_element.find_elements("tag name", "source")
+        direct_src = video_element.get_attribute("src")
+    
+        has_source_src = any(s.get_attribute("src") not in (None, "") for s in sources)
+        has_direct_src = direct_src not in (None, "")
+    
+        assert has_source_src or has_direct_src, \
+            "Video should have non-empty source"
+
+    def test_video_is_autoplaying(self, video_element):
+        """Verify video has autoplay attribute"""
+        assert video_element.get_attribute("autoplay") is not None, \
+            "Video should have autoplay attribute"
+
+    def test_video_is_muted(self, video_element):
+        """Verify video is muted"""
+        assert video_element.get_attribute("muted") is not None, \
+            "Video should be muted"
+        
+    def test_video_is_looping(self, video_element):
+        """Verify video is looping"""
+        assert video_element.get_attribute("loop") is not None, \
+            "Video should be looping"
     
     # CTA tests
     
     def test_links_section_exists(self, centered_promotion):
         """Verify links section exist"""
-        assert centered_promotion.has_links_section(), "Centered Promotion should have links section"
+        assert centered_promotion.has_links_section(), "Blade should have links section"
 
-    def test_primary_cta_exists(self, centered_promotion):
-        """Verify primary CTA exists"""
-        assert centered_promotion.has_primary_cta(), "Centered Promotion should have primary CTA"
-
-    def test_primary_cta_is_displayed(self, centered_promotion):
-        """Verify primary CTA is displayed"""
-        assert centered_promotion.is_primary_cta_visible(), "Centered Promotion primary CTA should be visible"
+    def test_primary_cta_is_visible(self, centered_promotion):
+        """Verify primary CTA is visible"""
+        assert centered_promotion.is_primary_cta_visible(), "Blade primary CTA should be visible"
     
     def test_primary_cta_text(self, centered_promotion):
         """Verify primary CTA has correct text"""
@@ -44,7 +77,7 @@ class TestCenteredPromotion:
         expected_primary_cta_text = "PLAY FOR FREE"
         
         assert primary_cta_text == expected_primary_cta_text, \
-            f"Centered Promotion primary CTA should contain '{expected_primary_cta_text}', got '{primary_cta_text}'"
+            f"Blade primary CTA should contain '{expected_primary_cta_text}', got '{primary_cta_text}'"
     
     def test_primary_cta_href(self, centered_promotion):
         """Verify primary CTA has correct href"""
@@ -53,7 +86,7 @@ class TestCenteredPromotion:
         expected_href = "https://signup.leagueoflegends.com/"
         
         assert href == expected_href, \
-            f"Centered Promotion primary CTA href should be '{expected_href}', got '{href}'"
+            f"Blade primary CTA href should be '{expected_href}', got '{href}'"
     
     def test_primary_cta_opens_new_tab(self, centered_promotion):
         """Verify primary CTA opens new tab"""
@@ -62,4 +95,4 @@ class TestCenteredPromotion:
         expected_target = "_blank"
         
         assert target == expected_target, \
-            f"Centered Promotion primary CTA target should be '{expected_target}', got '{target}'"
+            f"Blade primary CTA target should be '{expected_target}', got '{target}'"

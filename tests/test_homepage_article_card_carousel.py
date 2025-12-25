@@ -7,41 +7,37 @@ class TestArticleCardCarousel:
     
     @pytest.fixture(scope="session")
     def carousel_blade(self, home_page):
-        """Get Article Card Carousel blade once for all tests"""
+        """Get blade once for all tests"""
         return home_page.get_article_card_carousel()
     
     # Structural tests
     
-    def test_blade_is_displayed(self, carousel_blade):
-        """Verify carousel blade is displayed on page"""
-        assert carousel_blade.is_visible(), "Article Card Carousel should be visible"
+    def test_blade_is_visible(self, carousel_blade):
+        """Verify blade is visible on page"""
+        assert carousel_blade.is_visible(), "Blade should be visible"
     
     def test_backdrop_exists(self, carousel_blade):
-        """Verify carousel has backdrop"""
-        assert carousel_blade.has_backdrop(), "Carousel should have backdrop"
+        """Verify blade has backdrop"""
+        assert carousel_blade.has_backdrop(), "Blade should have backdrop"
     
     def test_backdrop_has_background(self, carousel_blade):
         """Verify backdrop has background layer"""
-        assert carousel_blade.has_backdrop_background(), "Backdrop should have background layer"
+        assert carousel_blade.has_backdrop_background(), "Blade backdrop should have background layer"
     
     # Title tests
     
-    def test_title_is_displayed(self, carousel_blade):
-        """Verify title is displayed"""
-        assert carousel_blade.has_title(), "Carousel should have title"
-    
     def test_title_text(self, carousel_blade):
         """Verify title has correct text"""
-        title_text = carousel_blade.get_title_text()
-        expected_text = "FEATURED NEWS"
-        
-        assert title_text == expected_text, f"Title should be '{expected_text}', got '{title_text}'"
+        title_text = carousel_blade.get_title()
+        expected_title = "FEATURED NEWS"
+
+        assert title_text == expected_title, f"Blade title should be '{expected_title}', got '{title_text}'"
     
     # CTA tests
     
-    def test_tertiary_cta_is_displayed(self, carousel_blade):
-        """Verify tertiary CTA is displayed"""
-        assert carousel_blade.has_tertiary_cta(), "Carousel should have tertiary CTA"
+    def test_tertiary_cta_is_visible(self, carousel_blade):
+        """Verify tertiary CTA is visible"""
+        assert carousel_blade.is_tertiary_cta_visible(), "Blade should have tertiary CTA"
     
     def test_tertiary_cta_text(self, carousel_blade):
         """Verify tertiary CTA has correct text"""
@@ -58,8 +54,16 @@ class TestArticleCardCarousel:
         
         assert href == expected_href, f"CTA href should be '{expected_href}', got '{href}'"
     
-    # Carousel tests
+    def test_tertiary_cta_opens_same_tab(self, carousel_blade):
+        """Verify tertiary CTA opens in the same tab (no target attribute)"""
+        tertiary_cta = carousel_blade.get_tertiary_cta_element()
+        target = tertiary_cta.get_attribute("target")
+        
+        assert not target, \
+            f"Blade tertiary CTA should have no target attribute, got '{target}'"
     
+    # Carousel tests
+
     def test_carousel_exists(self, carousel_blade):
         """Verify carousel exists"""
         assert carousel_blade.has_carousel(), "Blade should have carousel"
@@ -71,26 +75,21 @@ class TestArticleCardCarousel:
         
         assert slide_count == expected_silde_count, f"Carousel should have '{expected_silde_count}' slides, found '{slide_count}'"
     
-    def test_all_slides_exist(self, carousel_blade):
-        """Verify all slides are present in DOM"""
-        slides = carousel_blade.get_all_slides()
-        
-        assert len(slides) == 3, "Should have 3 slide elements"
-        for i, slide in enumerate(slides):
-            assert slide is not None, f"Slide {i} should exist"
-    
     def test_slides_have_valid_links(self, carousel_blade):
         """Verify each slide has a valid href"""
         slides = carousel_blade.get_all_slides()
+        assert slides, "Should have slides"  # Prevent silent pass
         
         for i, slide in enumerate(slides):
-            # Each slide contains an anchor tag
-            link = slide.find_element("tag name", "a")
-            href = link.get_attribute("href")
-            
-            assert href is not None, f"Slide {i} should have href"
-            assert len(href) > 0, f"Slide {i} href should not be empty"
-            assert href.startswith("http"), f"Slide {i} should have valid URL, got '{href}'"
+            try:
+                link = slide.find_element("tag name", "a")
+                href = link.get_attribute("href")
+
+                assert href and href.startswith("http"), \
+                f"Slide {i} should have valid http/https URL, got '{href}'"    
+            except:
+                pytest.fail(f"Slide {i} does not have an anchor tag")
+
     
     # Controls tests
     
