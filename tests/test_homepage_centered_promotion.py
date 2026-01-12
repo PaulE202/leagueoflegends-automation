@@ -35,6 +35,11 @@ class TestCenteredPromotion:
         
     # Video tests
 
+    def test_video_is_displayed(self, video_element):
+        """Verify video element is displayed"""
+        assert video_element.is_displayed(), \
+            "Video should be visible to displayed"
+
     def test_video_has_src(self, video_element):
         """Verify video has valid source"""
         sources = video_element.find_elements("tag name", "source")

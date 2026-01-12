@@ -166,7 +166,7 @@ class TestIconTabChooseChampion:
             try:
                 img = tab.find_element("tag name", "img")
                 assert img is not None, f"Blade carousel tab {i} should have an image"
-                assert img.is_displayed(), f"Blade carousel tab {i} image should be visible"
+                assert img.is_displayed(), f"Blade carousel tab {i} image should be displayed"
             except:
                 pytest.fail(f"Tab {i} does not have an image element")
 

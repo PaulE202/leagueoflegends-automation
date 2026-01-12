@@ -5,10 +5,6 @@ import time
 import pytest_html
 from datetime import datetime
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.edge.service import Service as EdgeService
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 
 
@@ -38,20 +34,15 @@ def session_browser(request):
         options = webdriver.FirefoxOptions()
         if headless:
             options.add_argument("--headless")
-        driver = webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=options
-        )
+        driver = webdriver.Firefox(options=options)
+        
     elif browser_name.lower() == "edge":
         options = webdriver.EdgeOptions()
         if headless:
             options.add_argument("--headless")
-        driver = webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=options
-        )
+        driver = webdriver.Edge(options=options)
     
-    driver.maximize_window()
+    driver.set_window_size(1920, 1080)
     driver.implicitly_wait(10)
     
     yield driver

@@ -1,3 +1,4 @@
+import time
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from components.base_blade import BaseBlade
@@ -72,7 +73,10 @@ class IconTabBlade(BaseBlade):
         """Click tab  by index"""
         tabs = self.get_all_slides()
         if 0 <= index < len(tabs):
-         tabs[index].click()
+         tab = tabs[index]
+         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", tab)
+         time.sleep(0.3)
+         tab.click()
         else:
             raise IndexError(f"Tab index {index} out of range (0-{len(tabs)-1})")
     
