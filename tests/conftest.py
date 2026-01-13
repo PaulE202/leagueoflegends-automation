@@ -32,6 +32,8 @@ def session_browser(request):
     
     if browser_name.lower() == "firefox":
         options = webdriver.FirefoxOptions()
+        if os.getenv('CI'):
+            options.binary_location = '/usr/bin/firefox'
         if headless:
             options.add_argument("--headless")
         driver = webdriver.Firefox(options=options)
