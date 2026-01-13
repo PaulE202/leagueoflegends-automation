@@ -1,4 +1,5 @@
 # League of Legends Homepage Test Automation
+![Tests](https://github.com/PaulE202/leagueoflegends-automation/workflows/Automated%20Tests/badge.svg)
 
 A comprehensive Selenium-based test automation framework for the League of Legends homepage, demonstrating Page Object Model architecture, component-based design, and professional QA automation practices.
 
@@ -387,7 +388,7 @@ def test_clicking_tab_changes_media_title_and_subtitle(self, icon_tab_choose_cha
 
 Potential additions for continued development:
 
-- [ ] CI/CD integration (GitHub Actions)
+- ✅ CI/CD integration (GitHub Actions)
 - [ ] Additional page coverage (Champions, News, Esports)
 - [ ] Cross-browser testing (Chrome, Safari)
 - [ ] Responsive testing (desktop, tablet, mobile viewports)
@@ -399,7 +400,7 @@ Potential additions for continued development:
 ## Project Context
 
 **Author:** Paul Egyed  
-**Technologies:** Selenium, pytest, Page Object Model, Python
+**Technologies:** Selenium, pytest, Page Object Model, Python, GitHub Actions
 
 This project demonstrates:
 - ✅ Framework architecture and design
@@ -408,6 +409,8 @@ This project demonstrates:
 - ✅ Selenium best practices
 - ✅ Test organization and maintainability
 - ✅ Professional QA automation skills
+- ✅ CI/CD integration (GitHub Actions)
+
 
 ## Contributing
 
